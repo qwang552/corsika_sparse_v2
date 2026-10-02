@@ -6,9 +6,9 @@
 # same seed, the same train / val / test split as the v1 cache.
 # scripts/check_cache.py compares a cache with this file.
 #
-# A finished cache is read only: preprocess refuses to write into it.  To build
-# a new cache, set paths.processed below to a new directory; to train on it,
-# set paths.processed in data.yaml to the same directory.
+# paths.processed below is the same directory as in data.yaml, so training
+# reads the cache this step writes.  A finished cache is read only: preprocess
+# refuses to write into it.
 extends: data.yaml
 
 seed: 20260922                 # split seed of the cache; only the split uses it here

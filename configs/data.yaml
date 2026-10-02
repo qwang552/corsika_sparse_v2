@@ -3,8 +3,9 @@
 # (which extends this file).
 #
 # The voxel cache (paths.processed) is READ ONLY: 192^3 grid, raw time < 12 ns,
-# stored t relative to the light front.  It is built by `preprocess` with
-# configs/preprocess_192.yaml.  `data` and `macro` enter the cache signature,
+# stored t relative to the light front.  Build it first with `preprocess` and
+# configs/preprocess_192.yaml (RUN_ORDER.md, section 3), which writes to the same
+# paths.processed.  `data` and `macro` enter the cache signature,
 # so they must not change while this cache is used.
 seed: 20260925                # training / sampling seed; the cache split used 20260922 (preprocess_192.yaml)
 

@@ -33,11 +33,11 @@ Change them before running anything.
 
 | File | Setting | What it is |
 |---|---|---|
-| `configs/data.yaml` | `paths.raw` | raw CORSIKA files (only needed to rebuild the cache) |
-| | `paths.processed` | 192³ voxel cache (`event_XXXXX.npz` + `metadata.json`) |
+| `configs/data.yaml` | `paths.raw` | raw CORSIKA files (input of section 3) |
+| | `paths.processed` | 192³ voxel cache, written by section 3 |
 | | `paths.output` | where checkpoints, samples and plots are written |
 | | `viz.events` | test event ids for the per-event figures (export3d, sample.ipynb); see below |
-| `configs/preprocess_192.yaml` | `paths.raw`, `paths.processed` | only if you rebuild the cache |
+| `configs/preprocess_192.yaml` | `paths.raw`, `paths.processed` | the same values as in `data.yaml` |
 | `jobs/*.sub` | `project = ...` | this code directory |
 | | `env_activate = ...` | your python environment (`.../bin/activate`) |
 | `jobs/v1_samples.sub` | `v1_project = ...` | the old v1 package (optional baseline only) |
@@ -67,11 +67,8 @@ Find anything left over:
 grep -rn "/data/user/qwang\|/scratch/qwang" configs jobs scripts notebooks run_pipeline.sh
 ```
 
-Data: on NPX the cache and the raw files can be read in place. Elsewhere, copy
-`<paths.processed>` (`events/`, `metadata.json`, `signature.json`) or rebuild it
-(section 3). The cache signature includes `paths.raw`, so after you change
-`paths.raw`, `check_cache.py` reports a copied cache as DIFFERENT; training
-does not check the signature.
+Data: the voxel cache is not in this repository. Build it from the raw files
+with section 3 before training.
 
 Other cluster-specific settings are the GPU requirement
 (`GPUs_Capability >= 6.0 && < 9.0` in `jobs/*.sub` and `REQ_GPU` in
@@ -125,7 +122,7 @@ with other settings is refused), and evaluation names must be new.
 
 ## 3. Data: build the voxel cache
 
-Skip this if you already have the cache.
+Run this once before training; it writes the cache to `paths.processed`.
 
 ```bash
 # 16 CPU shards, then finalize (split + statistics)
@@ -151,8 +148,8 @@ What `preprocess` does (`sparseshower/data.py`):
 | | `<paths.processed>/signature.json`: hash of the settings; a different setting is refused |
 
 The models use `ijk`, `q` and `off`. `t` and `m` are stored but not modelled yet.
-The training cache (`paths.processed` in `configs/data.yaml`) was built with
-`configs/preprocess_192.yaml`.
+My models were trained on a cache built by the earlier v1 code with the same
+settings and split seed; this step should give the same cache (`check_cache.py` compares).
 
 ## 4. Checks before training
 
