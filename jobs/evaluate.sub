@@ -1,0 +1,29 @@
+# Evaluation (CPU): R0 + every run named in RUNARGS (--runs ... and/or --v1-dir DIR).
+# The macro is called RUNARGS because HTCondor reads a variable named args as the arguments command.
+# -> artifacts/<case>/eval/<NAME>/{summary.json, per_event.jsonl, passfail.md, summary.png}.
+# Truth metrics are cached under artifacts/metrics_cache/, so later evaluations are fast.
+#   CONFIG config file (default configs/v2.yaml)   CASE output sub-directory (default v2a)
+#   NAME   output name (must be new; evaluations are never overwritten)
+#   condor_submit NAME=baseline RUNARGS="--v1-dir /data/user/qwang/corsika_sparse_v2/artifacts/v1_samples/truth128" /data/user/qwang/corsika_sparse_v2/jobs/evaluate.sub
+#   condor_submit NAME=t2_check RUNARGS="--runs sa_truth sa_recon sa_truth_t2off sa_recon_t2off" /data/user/qwang/corsika_sparse_v2/jobs/evaluate.sub
+project = /data/user/qwang/corsika_sparse_v2
+env_activate = /data/user/qwang/env/env2025/bin/activate
+universe = vanilla
+executable = $(project)/run_pipeline.sh
+environment = "SPARSE_PROJECT=$(project) SPARSE_ENV=$(env_activate) SPARSE_CONFIG=$(CONFIG:configs/v2.yaml)"
+getenv = True
+arguments = "evaluate --case $(CASE:v2a) --name $(NAME:eval) $(RUNARGS:--runs sa_truth sa_recon)"
+request_cpus = 4
+request_memory = 32GB
+request_disk = 4GB
+request_gpus = 0
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_executable = True
+transfer_output_files = ""
+output = v2_evaluate.$(Cluster).$(Process).out
+error = v2_evaluate.$(Cluster).$(Process).err
+log = v2_evaluate.$(Cluster).log
+stream_output = True
+stream_error = True
+queue 1

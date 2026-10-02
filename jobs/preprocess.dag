@@ -1,0 +1,8 @@
+# Whole preprocessing in one submission: 16 shards in parallel, then finalize.
+#   cd /scratch/qwang/corsika_sparse_v2
+#   condor_submit_dag /data/user/qwang/corsika_sparse_v2/jobs/preprocess.dag
+# RETRY resubmits the shards node if a shard fails; events already in the cache are skipped.
+JOB    shards    /data/user/qwang/corsika_sparse_v2/jobs/preprocess.sub
+JOB    finalize  /data/user/qwang/corsika_sparse_v2/jobs/preprocess_finalize.sub
+PARENT shards CHILD finalize
+RETRY  shards 2

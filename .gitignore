@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+*_run.ipynb
+*_run_*.ipynb
+smoke_run/
+artifacts/
+*.pt
+*.npz
+*.npy
+*.lock
+*.out
+*.err
+*.log
+data/
+configs/thr_*.yaml

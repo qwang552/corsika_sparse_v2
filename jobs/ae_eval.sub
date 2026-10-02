@@ -1,0 +1,29 @@
+# FieldAE acceptance on val events -> artifacts/<case>/eval/<NAME>/passfail.md
+#   CONFIG config file (default configs/v2.yaml)   CASE output sub-directory (default v2a)
+#   CKPT   best | last (default best)     N      val events (default 256)
+#   NAME   output name (default ae_best; refused if it exists)
+#   condor_submit /data/user/qwang/corsika_sparse_v2/jobs/ae_eval.sub
+#   condor_submit NAME=ae_best_2 /data/user/qwang/corsika_sparse_v2/jobs/ae_eval.sub
+project = /data/user/qwang/corsika_sparse_v2
+env_activate = /data/user/qwang/env/env2025/bin/activate
+universe = vanilla
+executable = $(project)/run_pipeline.sh
+environment = "SPARSE_PROJECT=$(project) SPARSE_ENV=$(env_activate) SPARSE_CONFIG=$(CONFIG:configs/v2.yaml)"
+getenv = True
+arguments = "ae-eval --case $(CASE:v2a) --checkpoint $(CKPT:best) --n-samples $(N:256) --name $(NAME:ae_best)"
+request_cpus = 1
+request_memory = 12GB
+request_disk = 4GB
+request_gpus = 1
+# capability 6.0 to 8.9: GTX 1080 (6.1) up to A40 / Ada; excludes the 4 GB GTX 980 (5.2) and Hopper / Blackwell (9.0 and up)
+requirements = (GPUs_Capability >= 6.0) && (GPUs_Capability < 9.0)
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_executable = True
+transfer_output_files = ""
+output = v2_ae_eval.$(Cluster).$(Process).out
+error = v2_ae_eval.$(Cluster).$(Process).err
+log = v2_ae_eval.$(Cluster).log
+stream_output = True
+stream_error = True
+queue 1

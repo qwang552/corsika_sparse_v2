@@ -1,0 +1,28 @@
+# One SDEdit chain, step by step, for one test event (CPU): latent, noised latent, DiT trajectory,
+# AE decode, start set, struct levels, attr and T2, each next to truth. Figure + npz of every intermediate.
+#   condor_submit CONFIG=configs/v2_cal85.yaml EVENT=28 RUN=sdedit_1 /data/user/qwang/corsika_sparse_v2/jobs/chain_steps.sub
+# RUN = an sdedit run to reproduce (seed, sigma, T2, checkpoint taken from it; the result is compared with its sample).
+# RUN=none uses SIGMA (default 1) and seed 0 instead.
+# Output: artifacts/<CASE>/viz/chain_steps/event<EVENT>_s<sigma>.png and .npz (timestamped if the name exists).
+#   CONFIG config file (default configs/v2.yaml)   CASE output sub-directory (default v2a)
+#   EVENT  test event id (default 28)   EXTRA more options
+project = /data/user/qwang/corsika_sparse_v2
+env_activate = /data/user/qwang/env/env2025/bin/activate
+universe = vanilla
+executable = /bin/bash
+getenv = True
+arguments = "-c 'source $(env_activate) && cd $(project) && export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 MPLBACKEND=Agg PYTHONUNBUFFERED=1 && python -m sparseshower.chain_steps --config $(CONFIG:configs/v2.yaml) --case $(CASE:v2a) --event $(EVENT:28) --sigma $(SIGMA:1) --match-run $(RUN:none) $(EXTRA:)'"
+request_cpus = 8
+request_memory = 16GB
+request_disk = 2GB
+request_gpus = 0
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_executable = False
+transfer_output_files = ""
+output = v2_chain_steps.$(Cluster).$(Process).out
+error = v2_chain_steps.$(Cluster).$(Process).err
+log = v2_chain_steps.$(Cluster).log
+stream_output = True
+stream_error = True
+queue 1

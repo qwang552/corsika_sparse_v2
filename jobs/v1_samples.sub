@@ -1,0 +1,30 @@
+# Baseline samples from the earlier corsika_sparse_v1 package, conditioned on the true (z, r)
+# photon summary (the "macro") of test event n, using that package and its checkpoints read only.
+# Writes into the v2 artifacts (the absolute --out-name), so nothing under the v1 directory changes.
+# Sample n uses test event n, the same events as the v2 paired runs.
+#   N      test events (default 128)       NSHARD parallel GPU jobs (default 4)
+#   condor_submit /data/user/qwang/corsika_sparse_v2/jobs/v1_samples.sub
+project = /data/user/qwang/corsika_sparse_v2
+v1_project = /data/user/qwang/corsika_sparse_v1
+env_activate = /data/user/qwang/env/env2025/bin/activate
+universe = vanilla
+executable = $(v1_project)/scripts/run_sample_opt.sh
+environment = "SPARSE_PROJECT=$(v1_project) SPARSE_ENV=$(env_activate)"
+getenv = True
+arguments = "--config configs/struct_opt.yaml --case main --checkpoint best --n-samples $(N:128) --macro-source truth --seed 0 --out-name $(project)/artifacts/v1_samples/truth$(N:128) --shard $(Process) --num-shards $(NSHARD:4)"
+request_cpus = 2
+request_memory = 16GB
+request_disk = 4GB
+request_gpus = 1
+# capability 6.0 to 8.9: GTX 1080 (6.1) up to A40 / Ada; excludes the 4 GB GTX 980 (5.2) and Hopper / Blackwell (9.0 and up)
+requirements = (GPUs_Capability >= 6.0) && (GPUs_Capability < 9.0)
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_executable = True
+transfer_output_files = ""
+output = v1_samples.$(Cluster).$(Process).out
+error = v1_samples.$(Cluster).$(Process).err
+log = v1_samples.$(Cluster).log
+stream_output = True
+stream_error = True
+queue $(NSHARD:4)

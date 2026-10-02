@@ -1,0 +1,28 @@
+# Interactive 3D comparison page (CPU): voxels drawn as accumulated light (up to 250,000 per panel), linked rotation,
+# per-event tabs (truth | each paired run) and unconditional tabs (FULL next to its nearest test event, "not paired").
+#   condor_submit CONFIG=configs/v2_cal85.yaml RUNS="sa_truth sa_recon sdedit_1" FULL=full /data/user/qwang/corsika_sparse_v2/jobs/chain_page.sub
+# Output: artifacts/<CASE>/viz/chain_page.html (timestamped name if it exists; nothing is overwritten).
+# FULL=none leaves out the unconditional tabs. EXTRA passes more options, e.g. EXTRA="--events 13 28 31".
+#   CONFIG config file (default configs/v2.yaml)   CASE output sub-directory (default v2a)
+#   RUNS   paired runs (default "sa_truth sa_recon")   FULL unconditional run (default full)
+project = /data/user/qwang/corsika_sparse_v2
+env_activate = /data/user/qwang/env/env2025/bin/activate
+universe = vanilla
+executable = /bin/bash
+environment = "SPARSE_PROJECT=$(project) SPARSE_ENV=$(env_activate) SPARSE_CONFIG=$(CONFIG:configs/v2.yaml)"
+getenv = True
+arguments = "$(project)/scripts/chain_page.sh --case $(CASE:v2a) --runs $(RUNS:sa_truth sa_recon) --full-run $(FULL:full) $(EXTRA:)"
+request_cpus = 4
+request_memory = 16GB
+request_disk = 2GB
+request_gpus = 0
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_executable = False
+transfer_output_files = ""
+output = v2_chain_page.$(Cluster).$(Process).out
+error = v2_chain_page.$(Cluster).$(Process).err
+log = v2_chain_page.$(Cluster).log
+stream_output = True
+stream_error = True
+queue 1

@@ -1,0 +1,102 @@
+# Shared settings: paths, the voxel cache, the 48^3 field, the sparse backbone,
+# EDM and the generic training settings.  Model sections live in v2.yaml
+# (which extends this file).
+#
+# The voxel cache (paths.processed) is READ ONLY: 192^3 grid, raw time < 12 ns,
+# stored t relative to the light front.  It is built by `preprocess` with
+# configs/preprocess_192.yaml.  `data` and `macro` enter the cache signature,
+# so they must not change while this cache is used.
+seed: 20260925                # training / sampling seed; the cache split used 20260922 (preprocess_192.yaml)
+
+paths:
+  raw: /data/user/qwang/z0918_cherenkov
+  processed: /data/user/qwang/corsika_sparse_v2/data/processed_192
+  output: /data/user/qwang/corsika_sparse_v2/artifacts
+
+data:
+  source_pattern: shower_group_{eid}/cherenkov/light.parquet
+  event_start: 0
+  event_stop: 16000
+  ranges: [[-2.0, 2.0], [-2.0, 2.0], [46.0, 50.0]]   # metres
+  grid: 192                    # 2.08 cm voxels
+  time_max: 12.0                # ns
+  time_mode: lightfront
+  q_eps: 0.001
+  parquet_batch_rows: 262144
+  train_fraction: 0.8
+  val_fraction: 0.1
+  min_events: 32
+
+# Coarse (z, r) summary stored in every cache file (a v1 input; no v2 model uses
+# it).  It enters the cache signature, and r_max also sets the radial rings of
+# the evaluation profiles.
+macro:
+  z_slabs: 16
+  r_rings: 8
+  r_max: 2.0
+  axis_x: 0.0
+  axis_y: 0.0
+
+field:
+  base_grid: 48                 # coarse field the AE encodes: 8.33 cm cells, 4^3 fine voxels each
+  occ_threshold: 0.5            # decoded p_occ above this starts the structure (sampling AND struct training)
+  stats_events: 256             # first N train events -> field_stats_48.json (ch1 standardization), written once
+
+# Sparse backbone shared by struct and attr (SparseNet).
+model:
+  pool_grid: 12                 # tokens for the global branch
+  window: 256
+  neighbours: 6                 # message passing; the 26-neighbour struct features are separate
+  width: 256
+  depth: 8
+  heads: 8
+  coarse_every: 2
+  pos_freqs: 7
+  pos_max_freq: 64.0
+  checkpoint: auto              # true | false | auto (auto: on for cards < checkpoint_below_gib)
+  checkpoint_below_gib: 16
+
+edm:
+  sigma_data: 1.0
+  p_mean: -1.2
+  p_std: 1.2
+  sigma_min: 0.002
+  sigma_max: 80.0
+  rho: 7
+  predict: edm
+  fine_fraction: 0.0
+  fine_range: [0.002, 0.03]
+
+train:
+  lr: 0.0002
+  weight_decay: 0.0001
+  grad_clip: 1.0
+  amp: auto                     # auto: bf16 on cc>=8, fp16 on cc>=7, none on Pascal (GTX 1080)
+  ema: 0.999
+  probe_every: 500
+  cache_samples: 64
+  prefetch: 4
+
+sample:
+  steps: 32                     # Heun steps for DiT and attr
+  max_active: 400000
+  max_start: 60000              # decoded 48^3 start sets above this (~10x the audit median 5,940) fail fast instead of risking OOM
+  t2: true                      # rescale attr photons per 48^3 cell to the decoded field
+  sdedit_sigmas: [0.25, 0.5, 1.0, 2.0, 5.0]
+
+eval:
+  paired_events: 128            # test events for the paired chains (sa_truth, sa_recon, sdedit)
+  bootstrap: 1000
+  c2st_folds: 5
+  memorization_train: 2000      # train latents used for the nearest-neighbour check
+  halo_r: 0.5                   # m; halo = voxel centres with hypot(x, y) > halo_r
+  halo_min_voxels: 20
+  halo_long_m: 0.6
+  seed: 1234
+
+viz:
+  events: [13, 28, 31, 35, 37, 61]   # test event ids of OUR 192^3 cache; with another cache use ids from its metadata.json test split
+
+audit:
+  events: 64
+  k: 8

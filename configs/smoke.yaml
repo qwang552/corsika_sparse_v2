@@ -1,0 +1,98 @@
+# Tiny end-to-end configuration for `selftest`: SYNTHETIC data, CPU sized.
+# Nothing produced with it says anything about physics; it checks the wiring.
+extends: v2.yaml
+seed: 7
+synthetic: true               # figures and pages add "[SYNTHETIC data]" to their titles
+
+paths:
+  raw: ./smoke_run/raw
+  processed: ./smoke_run/processed
+  output: ./smoke_run/artifacts
+
+data:
+  source_pattern: shower_group_{eid}/cherenkov/light.npz
+  event_start: 0
+  event_stop: 12
+  grid: 32
+  time_max: null
+  min_events: 4
+  train_fraction: 0.5
+  val_fraction: 0.25
+
+macro:
+  z_slabs: 8
+  r_rings: 4
+
+field:
+  base_grid: 8                 # 32 / 8 = 4 fine voxels per coarse cell edge, like 192 / 48
+  occ_threshold: 0.5
+
+model:
+  pool_grid: 4
+  window: 64
+  neighbours: 6
+  width: 32
+  depth: 2
+  heads: 4
+  coarse_every: 1
+  pos_freqs: 4
+  pos_max_freq: 16.0
+
+train:
+  amp: none
+  probe_every: 3
+  cache_samples: 4
+  prefetch: 2
+
+ae:
+  widths: [16, 32]             # 8^3 -> 4^3 latent
+  blocks: 1
+  latent_channels: 4
+  attn_heads: 2
+  batch_size: 2
+  accum: 1
+  steps: 3
+  probe_events: 2
+
+encode:
+  d4: true                     # exercise the D4 path even on 12 events
+  batch_size: 4
+
+dit:
+  patch: 2                     # 4^3 -> 8 tokens
+  width: 48
+  depth: 2
+  heads: 4
+  batch_size: 4
+  steps: 3
+  d4: true                     # also train the DiT on the D4 latents (v2.yaml has it off)
+  probe_events: 2
+
+struct:
+  g_dim: 16
+  steps: 3
+  probe_events: 1
+
+attr:
+  g_dim: 16
+  steps: 3
+  probe_events: 1
+  probe_sigmas: [0.1, 1.0]
+
+sample:
+  steps: 3
+  max_active: 60000
+  sdedit_sigmas: [0.5, 2.0]
+
+eval:
+  paired_events: 3
+  bootstrap: 50
+  c2st_folds: 2
+  memorization_train: 6
+  halo_r: 0.3
+
+viz:
+  events: []                   # selftest picks test events itself
+
+audit:
+  events: 4

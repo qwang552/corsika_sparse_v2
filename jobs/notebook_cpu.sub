@@ -1,0 +1,28 @@
+# Execute a notebook headless on CPU -> <notebook>_run.ipynb next to it (timestamped if that exists).
+# sample.ipynb, viz.ipynb and ae_check.ipynb only read outputs (plus a few AE forwards), so CPU
+# is enough; report.ipynb runs models and uses notebook_gpu.sub.
+#   NB     notebook (default notebooks/sample.ipynb)
+#   EXTRA  more --set options; notebooks ignore CONFIG, so pass EXTRA="--set CONFIG=..."
+#   condor_submit NB=notebooks/sample.ipynb /data/user/qwang/corsika_sparse_v2/jobs/notebook_cpu.sub
+#   condor_submit NB=notebooks/viz.ipynb /data/user/qwang/corsika_sparse_v2/jobs/notebook_cpu.sub
+project = /data/user/qwang/corsika_sparse_v2
+env_activate = /data/user/qwang/env/env2025/bin/activate
+universe = vanilla
+executable = $(project)/run_pipeline.sh
+environment = "SPARSE_PROJECT=$(project) SPARSE_ENV=$(env_activate) SPARSE_CONFIG=$(CONFIG:configs/v2.yaml)"
+getenv = True
+arguments = "notebook $(NB:notebooks/sample.ipynb) --threads 8 --set DEVICE=cpu $(EXTRA:)"
+request_cpus = 8
+request_memory = 24GB
+request_disk = 4GB
+request_gpus = 0
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_executable = True
+transfer_output_files = ""
+output = v2_nb_cpu.$(Cluster).$(Process).out
+error = v2_nb_cpu.$(Cluster).$(Process).err
+log = v2_nb_cpu.$(Cluster).log
+stream_output = True
+stream_error = True
+queue 1

@@ -1,0 +1,29 @@
+# Self-contained 3D comparison page (CPU): per-event rows (truth | each paired run | V1)
+# and the unconditional gallery (FULL next to its nearest test event, labelled "not paired").
+# Output: artifacts/<CASE>/viz/chains_3d.html (timestamped if it exists). Lighter than
+# chain_page.sub: at most 5,000 points per panel and no charts.
+#   CONFIG config file (default configs/v2.yaml)   CASE output sub-directory (default v2a)
+#   RUNS   paired runs (default "sa_truth sa_recon")   FULL unconditional run (default full)
+#   EXTRA  more options, e.g. EXTRA="--v1-dir DIR" for V1 panels
+#   condor_submit RUNS="sa_truth sa_recon sdedit_0.5 sdedit_2" FULL=full /data/user/qwang/corsika_sparse_v2/jobs/export3d.sub
+project = /data/user/qwang/corsika_sparse_v2
+env_activate = /data/user/qwang/env/env2025/bin/activate
+universe = vanilla
+executable = $(project)/run_pipeline.sh
+environment = "SPARSE_PROJECT=$(project) SPARSE_ENV=$(env_activate) SPARSE_CONFIG=$(CONFIG:configs/v2.yaml)"
+getenv = True
+arguments = "export3d --case $(CASE:v2a) --runs $(RUNS:sa_truth sa_recon) --full-run $(FULL:full) $(EXTRA:)"
+request_cpus = 2
+request_memory = 16GB
+request_disk = 2GB
+request_gpus = 0
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_executable = True
+transfer_output_files = ""
+output = v2_export3d.$(Cluster).$(Process).out
+error = v2_export3d.$(Cluster).$(Process).err
+log = v2_export3d.$(Cluster).log
+stream_output = True
+stream_error = True
+queue 1

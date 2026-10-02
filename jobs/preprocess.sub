@@ -1,0 +1,26 @@
+# Build the 192^3 voxel cache from the raw parquet files (CPU, no GPU), split over NSHARD jobs.
+# Shard i caches events i, i+NSHARD, i+2*NSHARD, ...; the shards never touch the same file.
+# When every shard has left the queue, run preprocess_finalize.sub once (or use preprocess.dag, which does both).
+# Resubmitting resumes: events already in the cache are skipped.
+#   CONFIG  default configs/preprocess_192.yaml (writes to its paths.processed; a finished cache is refused)
+#   condor_submit /data/user/qwang/corsika_sparse_v2/jobs/preprocess.sub
+#   condor_submit NSHARD=32 /data/user/qwang/corsika_sparse_v2/jobs/preprocess.sub
+project = /data/user/qwang/corsika_sparse_v2
+env_activate = /data/user/qwang/env/env2025/bin/activate
+universe = vanilla
+executable = $(project)/run_pipeline.sh
+environment = "SPARSE_PROJECT=$(project) SPARSE_ENV=$(env_activate) SPARSE_CONFIG=$(CONFIG:configs/preprocess_192.yaml)"
+getenv = True
+arguments = "preprocess --shard $(Process) --num-shards $(NSHARD:16)"
+request_cpus = 2
+request_memory = 16GB
+request_disk = 4GB
+request_gpus = 0
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_executable = True
+transfer_output_files = ""
+output = v2_preprocess.$(Cluster).$(Process).out
+error = v2_preprocess.$(Cluster).$(Process).err
+log = v2_preprocess.$(Cluster).log
+queue $(NSHARD:16)

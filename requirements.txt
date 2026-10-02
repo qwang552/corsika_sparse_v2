@@ -1,0 +1,8 @@
+# Tested with Python 3.10 and torch 2.6 (CUDA 12.4 on the cluster).
+torch>=2.1
+numpy
+pyyaml
+pyarrow
+scipy
+matplotlib
+pytest

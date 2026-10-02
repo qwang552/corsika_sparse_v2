@@ -1,0 +1,4 @@
+# v2.yaml with the AE occupancy threshold calibrated to 0.85 (used for everything except AE training).
+extends: v2.yaml
+field:
+  occ_threshold: 0.85
