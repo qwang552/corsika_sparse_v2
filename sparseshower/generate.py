@@ -90,6 +90,7 @@ def generate(model_dir, n, out, seed=0, device=None, t2=None, verbose=True):
             raise FileExistsError(f"{out} holds showers from another model or seed; pick a new --out")
     else:
         write_json(out / "run.json", spec)
+        (out / "run.json").chmod(0o644)
     box = np.asarray(c["data"]["ranges"], dtype=np.float64)
     if verbose:
         print(f"model {model_dir} (steps {ch['steps']}) on {device}; {n} showers -> {out}", flush=True)
@@ -105,6 +106,7 @@ def generate(model_dir, n, out, seed=0, device=None, t2=None, verbose=True):
             continue
         save_npz(path, xyz=r["xyz"].astype(np.float32), nphotons=r["q"].astype(np.float32),
                  ijk=r["ijk"].astype(np.int32), box_m=box)
+        path.chmod(0o644)                   # readable by others on a shared disk
         written.append(path.name)
         if verbose:
             print(f"shower {i}: {len(r['q'])} voxels, {r['q'].sum():.3g} photons, {time.time() - t0:.0f} s",
