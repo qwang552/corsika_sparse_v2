@@ -5,6 +5,7 @@ __pycache__/
 *_run.ipynb
 *_run_*.ipynb
 smoke_run/
+showers/
 artifacts/
 *.pt
 !trained_model/*.pt

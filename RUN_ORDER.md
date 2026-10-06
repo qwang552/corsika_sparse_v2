@@ -17,12 +17,16 @@ design and the evaluation; this file lists the commands in the order they are ru
 ## Generate showers (no training needed)
 
 ```bash
+git clone https://github.com/qwang552/corsika_sparse_v2.git
+cd corsika_sparse_v2
 pip install -r requirements.txt
 python -m sparseshower.generate --n 10
 ```
 
 This writes 10 new 1 TeV showers to `showers/shower_00000.npz`, ... from the
-trained model in `trained_model/`. No data or paths need to be set up. Each file
+trained model in `trained_model/`. No data or paths need to be set up: both
+folders are relative to where you run the command, so run it inside the
+repository folder (`--model` and `--out` point to other folders). Each file
 lists every 2 cm voxel that has light:
 
 | key | shape | meaning |
