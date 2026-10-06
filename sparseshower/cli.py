@@ -11,6 +11,7 @@
     sample       --chain sa_truth|sa_recon|sdedit|full --run NAME
     evaluate     --runs NAME [NAME ...] [--v1-dir DIR] --name EVAL
     export3d     self-contained 3D comparison page
+    pack-model   copy a trained case into a model folder for `python -m sparseshower.generate`
     info         resolved grids, token counts, paths
 """
 from __future__ import annotations
@@ -21,7 +22,7 @@ import json
 from .common import config
 
 COMMANDS = ("selftest", "synth", "preprocess", "audit", "memtest", "train", "ae-eval",
-            "encode", "sample", "evaluate", "export3d", "info")
+            "encode", "sample", "evaluate", "export3d", "pack-model", "info")
 
 
 def build_parser():
@@ -54,7 +55,8 @@ def build_parser():
     ap.add_argument("--num-shards", type=int, default=1)
     ap.add_argument("--limit", type=int, help="preprocess / encode: only the first N events")
     ap.add_argument("--finalize", action="store_true", help="preprocess: after all shards, merge their reports and write metadata.json")
-    ap.add_argument("--out", help="export3d: output html path (default <case>/viz/chains_3d.html)")
+    ap.add_argument("--out", help="export3d: output html path (default <case>/viz/chains_3d.html); "
+                                   "pack-model: model folder (default trained_model)")
     ap.add_argument("--n-gallery", type=int, default=12, help="export3d: unconditional samples in the gallery")
     ap.add_argument("--keep", action="store_true", help="selftest: keep the previous smoke run")
     ap.add_argument("--allow-cpu", action="store_true")
@@ -161,6 +163,12 @@ def main(argv=None):
         from .export3d import export
 
         print(export(c, a.case, a.runs or [], a.full_run, a.v1_dir, a.events, n_gallery=a.n_gallery, out=a.out))
+        return 0
+
+    if a.command == "pack-model":
+        from .pack import pack_model
+
+        print(json.dumps(pack_model(c, a.case, a.out or "trained_model", a.checkpoint), indent=2))
         return 0
 
     if a.command == "info":

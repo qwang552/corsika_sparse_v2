@@ -352,11 +352,13 @@ Known issues:
 | `tests/` | unit tests: `python -m pytest tests -q` |
 | `RUN_ORDER.md` | commands in order, and the paths to change on another machine |
 | `run_pipeline.sh` | wrapper the .sub files call: activates the environment, runs the cli |
+| `trained_model/` | the trained model packed for `python -m sparseshower.generate` |
 
 Quick start on any machine (full command list in `RUN_ORDER.md`):
 
 ```bash
 pip install -r requirements.txt
+python -m sparseshower.generate --n 10    # 10 new showers from trained_model/ into showers/
 python -m pytest tests -q
 python -m sparseshower.cli selftest      # whole chain on synthetic data; ends with "SELFTEST PASS"
 ```

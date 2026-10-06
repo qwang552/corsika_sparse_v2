@@ -14,6 +14,43 @@ struct (`structure.py`, `struct_data.py`), attr (`attr.py`). Every `.py` file
 starts with a short description of what it does. `README.md` explains the
 design and the evaluation; this file lists the commands in the order they are run.
 
+## Generate showers (no training needed)
+
+```bash
+pip install -r requirements.txt
+python -m sparseshower.generate --n 10
+```
+
+This writes 10 new 1 TeV showers to `showers/shower_00000.npz`, ... from the
+trained model in `trained_model/`. No data or paths need to be set up. Each file
+lists every 2 cm voxel that has light:
+
+| key | shape | meaning |
+|---|---|---|
+| `xyz` | (N, 3) | position [m] |
+| `nphotons` | (N,) | number of Cherenkov photons |
+| `ijk` | (N, 3) | voxel index on the 192³ grid |
+| `box_m` | (3, 2) | x, y, z extent of the box [m] |
+
+```python
+import numpy as np
+s = np.load("showers/shower_00000.npz")
+xyz, nphotons = s["xyz"], s["nphotons"]
+```
+
+To plot them (projections, 3D view, profile along the shower axis), open
+`notebooks/view_showers.ipynb`, set `SHOWER_DIR` and run all cells.
+
+The same `--seed` gives the same showers. A GPU is used when one is available;
+on a CPU one shower takes minutes. On the cluster, run it as a GPU job
+(set `CODE` and `env_activate` in the .sub first, see section 0):
+
+```bash
+condor_submit N=100 /path/to/corsika_sparse_v2/jobs/generate.sub
+```
+
+The rest of this file is only needed to retrain the model.
+
 Steps:
 [0 Paths](#0-paths-to-change-on-your-machine) ·
 [1 Install](#1-install-and-test) ·
@@ -24,6 +61,7 @@ Steps:
 [6 DiT, struct, attr](#6-dit-struct-attr-models-2-4) ·
 [7 Sample and evaluate](#7-sample-and-evaluate) ·
 [8 Figures](#8-figures) ·
+[9 Pack](#9-pack-a-trained-model) ·
 [Notes](#notes)
 
 ## 0. Paths to change on your machine
@@ -38,7 +76,7 @@ Change them before running anything.
 | | `paths.output` | where checkpoints, samples and plots are written |
 | | `viz.events` | test event ids for the per-event figures (export3d, sample.ipynb); see below |
 | `configs/preprocess_192.yaml` | `paths.raw`, `paths.processed` | the same values as in `data.yaml` |
-| `jobs/*.sub` | `project = ...` | this code directory |
+| `jobs/*.sub` | `project = ...` (`CODE` default in generate.sub) | this code directory |
 | | `env_activate = ...` | your python environment (`.../bin/activate`) |
 | `jobs/v1_samples.sub` | `v1_project = ...` | the old v1 package (optional baseline only) |
 | `jobs/preprocess.dag` | two `JOB` lines | absolute paths of the two .sub files |
@@ -251,6 +289,18 @@ condor_submit -a request_cpus=8 -a request_memory=32GB NB=notebooks/report.ipynb
 # active voxels vs grid size (raw data)
 condor_submit $P/jobs/active_vs_grid.sub
 ```
+
+## 9. Pack a trained model
+
+Copy the four trained models and the few statistics `generate` needs into
+`trained_model/`, from the code directory:
+
+```bash
+python -m sparseshower.cli pack-model --config configs/v2_cal85.yaml
+```
+
+Weights are stored as float16 so every file stays below GitHub's 100 MB limit
+(about 150 MB in total). An existing folder is refused.
 
 ## Notes
 

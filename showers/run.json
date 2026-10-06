@@ -1,0 +1,11 @@
+{
+  "model": "/mnt/ceph1-npx/user/qwang/github/corsika_sparse_v2/trained_model",
+  "seed": 0,
+  "steps": {
+    "ae": 15000,
+    "attr": 60000,
+    "dit": 100000,
+    "struct": 40000
+  },
+  "t2": true
+}

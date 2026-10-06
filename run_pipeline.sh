@@ -4,6 +4,7 @@
 #
 #   run_pipeline.sh selftest                     synthetic end-to-end check (configs/smoke.yaml, CPU)
 #   run_pipeline.sh notebook <nb> [options]      execute a notebook headless (scripts/run_notebook.py)
+#   run_pipeline.sh generate [options]           new showers from trained_model/ (python -m sparseshower.generate)
 #   run_pipeline.sh <cli command> [cli options]  anything else goes to  python -m sparseshower.cli
 #
 # Examples (what the jobs/*.sub files pass as `arguments`):
@@ -63,6 +64,10 @@ case "$mode" in
   notebook)
     SPARSE_CONFIG="$config_path" bash scripts/check_environment.sh
     run python scripts/run_notebook.py "$@"
+    ;;
+  generate)
+    SPARSE_CONFIG="$config_path" bash scripts/check_environment.sh
+    run python -m sparseshower.generate "$@"
     ;;
   *)
     SPARSE_CONFIG="$config_path" bash scripts/check_environment.sh

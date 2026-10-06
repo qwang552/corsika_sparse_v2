@@ -2,8 +2,8 @@
 
 Runs every stage of the v2 chain with tiny models and a few steps each:
 synthetic raw -> preprocess -> audit -> AE train / eval -> encode
-(+ D4) -> DiT / struct / attr train -> 4 sampling chains -> evaluate ->
-3D page.  Run it first on a new machine (CPU is fine).  It checks the wiring;
+(+ D4) -> DiT / struct / attr train -> 4 sampling chains -> pack-model
+-> generate -> evaluate -> 3D page.  Run it first on a new machine (CPU is fine).  It checks the wiring;
 it says nothing about physics quality.
 """
 from __future__ import annotations
@@ -20,7 +20,9 @@ def run(c, keep=False, verbose=True):
     from .evaluate import evaluate, evaluate_ae
     from .export3d import export
     from .field_ae import encode_cache
+    from .generate import generate as generate_showers
     from .loader import case_dir, meta_for
+    from .pack import pack_model
     from .sample import generate
     from .synth import write_dataset
     from .train import train
@@ -68,6 +70,11 @@ def run(c, keep=False, verbose=True):
         if ok:
             runs.append(name)
     assert runs, "no chain produced a sample"
+    model = case_dir(c, case) / "trained_model"
+    if not model.exists():
+        pack_model(c, case, model, checkpoint="last")
+    files = generate_showers(model, 2, case_dir(c, case) / "showers", seed=1, verbose=False)
+    say(f"      pack-model + generate: {len(files)}/2 showers from the packed model")
     say("[7/9] sampling chains ran")
     summary = evaluate(c, case, runs, name="selftest", verbose=False)
     assert summary["rungs"], "evaluation empty"

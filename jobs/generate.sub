@@ -1,0 +1,32 @@
+# Generate new 1 TeV showers on one GPU from the packed model trained_model/ (no data needed).
+#   N     number of showers (default 10)
+#   OUT   output folder, relative to the code directory or absolute (default showers)
+#   SEED  shower n uses SEED + n (default 0); a second job with a larger N only adds the missing files
+#   CODE  code directory that holds trained_model/ (default below)
+# Writes OUT/shower_00000.npz, ... with xyz [m], nphotons, ijk, box_m.
+#   cd /scratch/qwang/corsika_sparse_v2
+#   condor_submit N=100 /data/user/qwang/corsika_sparse_v2/jobs/generate.sub
+#   condor_submit N=100 OUT=/data/user/qwang/showers_100 /data/user/qwang/corsika_sparse_v2/jobs/generate.sub
+code_dir = $(CODE:/data/user/qwang/corsika_sparse_v2)
+env_activate = /data/user/qwang/env/env2025/bin/activate
+universe = vanilla
+executable = $(code_dir)/run_pipeline.sh
+environment = "SPARSE_PROJECT=$(code_dir) SPARSE_ENV=$(env_activate)"
+getenv = True
+arguments = "generate --n $(N:10) --out $(OUT:showers) --seed $(SEED:0)"
+request_cpus = 2
+request_memory = 16GB
+request_disk = 4GB
+request_gpus = 1
+# capability 6.0 to 8.9: GTX 1080 (6.1) up to A40 / Ada; excludes the 4 GB GTX 980 (5.2) and Hopper / Blackwell (9.0 and up)
+requirements = (GPUs_Capability >= 6.0) && (GPUs_Capability < 9.0)
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_executable = True
+transfer_output_files = ""
+output = v2_generate.$(Cluster).$(Process).out
+error = v2_generate.$(Cluster).$(Process).err
+log = v2_generate.$(Cluster).log
+stream_output = True
+stream_error = True
+queue 1

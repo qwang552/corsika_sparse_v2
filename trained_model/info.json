@@ -1,0 +1,24 @@
+{
+  "case": "v2a",
+  "checkpoints": {
+    "ae": "ae_best.pt",
+    "attr": "attr_best.pt",
+    "dit": "dit_best.pt",
+    "struct": "struct_best.pt"
+  },
+  "dtype": "float16",
+  "occ_threshold": 0.85,
+  "packed": "2026-10-05 16:31",
+  "size_mb": {
+    "ae": 41.0,
+    "attr": 21.9,
+    "dit": 61.9,
+    "struct": 22.1
+  },
+  "steps": {
+    "ae": 15000,
+    "attr": 60000,
+    "dit": 100000,
+    "struct": 40000
+  }
+}

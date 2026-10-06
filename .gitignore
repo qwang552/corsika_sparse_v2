@@ -7,6 +7,7 @@ __pycache__/
 smoke_run/
 artifacts/
 *.pt
+!trained_model/*.pt
 *.npz
 *.npy
 *.lock
