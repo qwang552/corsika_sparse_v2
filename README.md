@@ -1,8 +1,7 @@
 # corsika_sparse_v2
 
 > **Status: work in progress.** The model is still being improved, and the generated
-> showers do not yet fully match CORSIKA 8. Use them for testing and visualization only,
-> not for physics analysis.
+> showers do not yet fully match CORSIKA 8. Use them for testing and visualization only.
 
 A generative model for the Cherenkov light of CORSIKA 8 in-ice showers. It
 produces the full photon distribution (`NPhotons` per position) on a sparse
